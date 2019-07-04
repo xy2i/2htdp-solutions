@@ -301,6 +301,7 @@
       s)) ; already a Fired, return the same state (do nothing)
 
 ; SIGS -> SIGS
+; (main initial-state) to run
 (define (main s)
   (big-bang s
     [on-tick si-move 0.05]
