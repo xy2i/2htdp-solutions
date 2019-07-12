@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-reader.ss" "lang")((modname flatt) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname 133-cond-flatt) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 ; A List-of-names is one of: 
 ; – '()
 ; – (cons String List-of-names)
@@ -25,13 +25,10 @@
   (cond
     [(empty? alon) #false]
     [(cons? alon)
-     (or (string=? (first alon) "Flatt")
-         (contains-flatt? (rest alon)))]))
+     (cond
+      [(string=? (first alon) "Flatt") #true]
+      [else (contains-flatt? (rest alon))])]))
 
-(contains-flatt? (cons "Fagan"
-  (cons "Findler"
-    (cons "Fisler"
-      (cons "Flanagan"
-        (cons "Flatt"
-          (cons "Felleisen"
-            (cons "Friedman" '()))))))))
+;; A (cond) with two clauses and a else is the same as an (or).
+;; The version with (or) is more concise and exposes the intent of
+;; the program.
