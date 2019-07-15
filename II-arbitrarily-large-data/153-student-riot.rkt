@@ -255,7 +255,7 @@
 14 1 #"\0"
 0 -1 1 #"\0"
 1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
-          0 373 0 4 3 85
+          0 382 0 4 3 85
 (
  #";; The first three lines of this file were inserted by DrRacket. The"
  #"y record metadata"
@@ -746,6 +746,18 @@
 0 0 24 3 1 #" "
 0 0 14 3 4 #"list"
 0 0 24 3 6 #")))]))"
+0 0 24 29 1 #"\n"
+0 0 24 29 1 #"\n"
+0 0 17 3 39 #";; Ex. 153: Where is the tenth balloon?"
+0 0 24 29 1 #"\n"
+0 0 17 3 89
+(
+ #"; It is slightly out of view, two squares down and one square right "
+ #"from the last visible"
+) 0 0 24 29 1 #"\n"
+0 0 17 3 9 #"; ballon."
+0 0 24 29 1 #"\n"
+0 0 17 3 51 #"; This traces the affine function f(x) -> -2x + 20."
 0 0 24 29 1 #"\n"
 0 0 24 29 1 #"\n"
 0 0 17 3 12 #"; N -> Image"
