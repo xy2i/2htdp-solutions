@@ -2,10 +2,6 @@
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-beginner-reader.ss" "lang")((modname 175-wc) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/batch-io)
-; A List-of-1String is one of:
-; - '()
-; - (cons 1String List-of-1String)
-
 ; A List-of-string is one of:
 ; - '()
 ; - (cons String List-of-string)
@@ -14,30 +10,64 @@
 ; - '()
 ; - (cons List-of-string List-of-list-of-string)
 
-(define-struct wc [w l])
+(define-struct wc [l w c])
 ; A WCcount is a struct:
-;  (make-wc 1String Words Lines)
-; interpretation counts the number of 1Strings, words, and lines
+;  (make-wc lines words 1strings)
+; interpretation counts the number of 1strings, words, and lines
 
 ; LLS -> WCount
 ; counts words, lines, and 1Strings
-(define (wc-util lls w l)
-  (cond
-    [(empty? lls) (make-wc w l)] ; the entire file is empty, so it's an empty string
-    [else
-     (wc-util (rest lls)
-              (add1 w) ; word count: add 1
-              (wc/lines lls l) ; line count: delegate
-              )]))
+(define (wc-util lls)
+  (make-wc
+   (count-lines lls)
+   (count-words lls)
+   (count-1string lls)))
 
-(define (wc/lines lls l)
+; LLS -> Number
+; counts lines
+(check-expect (count-lines (cons '()
+                                 (cons (cons "a" (cons "b" (cons "c" '())))
+                                       (cons (cons "how" '()) '()))))
+              3)
+(define (count-lines lls)
+  (length lls))
+
+; LLS -> Number
+; counts words
+(check-expect (count-words (cons '()
+                                 (cons (cons "a" (cons "b" (cons "c" '())))
+                                       (cons (cons "how" '()) '()))))
+              4)
+(define (count-words lls)
   (cond
-    [(empty? lls) l]
-    [else
-     (wc/lines (rest lls)
-               (add1 l))]))
+    [(empty? lls) 0]
+    [else (+ (count-words/line (first lls))
+             (count-words (rest lls)))]))
+
+(define (count-words/line los)
+  (length los))
+
+; LLS -> Number
+; counts 1String on the entire list
+(check-expect (count-1string (cons '()
+                                 (cons (cons "a" (cons "b" (cons "c" '())))
+                                       (cons (cons "how" '()) '()))))
+              6)
+(define (count-1string lls)
+  (cond
+    [(empty? lls) 0]
+    [else (+ (count-1string/line (first lls))
+             (count-1string (rest lls)))]))
+
+(define (count-1string/line los)
+  (cond
+    [(empty? los) 0]
+    [else (+ (count-1string/word (first los))
+             (count-1string/line (rest los)))]))
+
+(define (count-1string/word s)
+  (string-length s))
 
 (define (main n)
   (wc-util (read-words/line
-           (string-append n ".txt"))
-  0 0))
+            (string-append n ".txt"))))
