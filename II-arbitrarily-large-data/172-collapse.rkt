@@ -21,7 +21,7 @@
                     ; (collapse/line (first lls)): a String
                     (collapse (rest lls)))]))
 
-; List-of-string -> Strings
+; List-of-string -> String
 ; appends a list-of-string into a single string
 (define (collapse/line los)
   (cond
