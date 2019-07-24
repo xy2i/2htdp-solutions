@@ -1,11 +1,11 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-reader.ss" "lang")((modname 179-edit) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname 180-editor-text-no-implode) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/image)
 (require 2htdp/universe)
-(define HEIGHT 20) ; the height of the editor 
+(define HEIGHT 36) ; the height of the editor 
 (define WIDTH 200) ; its width 
-(define FONT-SIZE 12) ; the font size 
+(define FONT-SIZE 16) ; the font size 
 (define FONT-COLOR "black") ; the font color 
  
 (define MT (empty-scene WIDTH HEIGHT))
@@ -33,11 +33,6 @@
 (define (create-editor pre post)
   (make-editor (reverse (explode pre))
                (explode post)))
-
-; Editor -> Image
-; renders an editor as an image of the two texts 
-; separated by the cursor 
-(define (editor-render e) MT)
  
 ; Editor KeyEvent -> Editor
 ; deals with a key event, given some editor
@@ -123,6 +118,7 @@
     [else
      (make-editor (rest (editor-pre ed)) ; delete one character
                   (editor-post ed))]))
+
 ; insert the 1String k between pre and post
 (check-expect
  (editor-ins (make-editor '() '()) "e")
@@ -139,10 +135,34 @@
   (make-editor (cons k (editor-pre ed))
                (editor-post ed)))
     
+; Editor -> Image
+; renders an editor as an image of the two texts 
+; separated by the cursor 
+(define (editor-render e)
+  (place-image/align
+   (beside (editor-text (editor-pre e))
+           CURSOR
+           (editor-text (editor-post e)))
+   1 1
+   "left" "top"
+   MT))
 
-; main : String -> Editor
-; launches the editor given some initial string 
-(define (main s)
-  (big-bang (create-editor s "")
-    [on-key editor-kh]
-    [to-draw editor-render]))
+;; Ex. 180: Design editor-text without using implode.
+;; Two implementations.
+
+; 1: appending images
+(define (editor-text.v1 l1s)
+  (cond
+    [(empty? l1s) (empty-scene 0 0)]
+    [else (beside (first l1s)
+                  (editor-text (rest l1s)))]))
+
+; 2: appending 1Strings then rendering
+(define (editor-text l1s)
+  (text (walk-list l1s) FONT-SIZE FONT-COLOR))
+
+(define (walk-list s)
+  (cond
+    [(empty? s) ""]
+    [else (string-append (first s)
+                         (walk-list (rest s)))]))
