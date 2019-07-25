@@ -10,4 +10,4 @@
 (check-expect (list '() '() (cons 1 '()))
               (list '() '() (list 1)))
 (check-expect (cons "a" (cons (list 1) (list #false '())))
-              (list "a" (list 1) #false '())))
+              (list "a" (list 1) #false '()))
