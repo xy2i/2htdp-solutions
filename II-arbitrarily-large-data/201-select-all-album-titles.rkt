@@ -26,38 +26,3 @@
     [(empty? lt) 0]
     [else (+ (track-time (first lt))
              (total-time (rest lt)))]))
-
-; LTracks -> List-of-Strings
-; gets all the album titles from the collection
-(check-expect (select-all-album-titles ltrack1)
-              (list "Bust-a-move!" "Aeronaut" "Radiance"))
-(check-expect (select-all-album-titles ltrack3)
-              (list "Bust-a-move!" "Aeronaut" "Bust-a-move!" "Bust-a-move!"))
-(define (select-all-album-titles lt)
-  (cond
-    [(empty? lt) '()]
-    [else (cons (track-name (first lt))
-                (select-all-album-titles (rest lt)))]))
-
-; List-of-String -> List-of-String
-; creates a set of unique strings
-(check-expect (create-set (list "hi" "there"))
-              (list "hi" "there"))
-(check-expect (create-set (list "hi" "there" "oh" "hi" "mr." "there"))
-              (list "oh" "hi" "mr." "there"))
-(define (create-set los)
-  (cond
-    [(empty? los) '()]
-    [else
-     (if (member? (first los) (rest los))
-         (create-set (rest los))
-         (cons (first los) (create-set (rest los))))]))
-
-; LTracks -> List-of-Strings
-; gets all the album titles from the collection, uniquely
-(check-expect (select-album-titles/unique ltrack1)
-              (list "Bust-a-move!" "Aeronaut" "Radiance"))
-(check-expect (select-album-titles/unique ltrack3)
-              (list "Aeronaut" "Bust-a-move!"))
-(define (select-album-titles/unique lt)
-  (create-set (select-all-album-titles lt)))
