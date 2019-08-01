@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname 207-total-time-list) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname 208-find-booleans) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/batch-io)
 (require 2htdp/itunes)
 
@@ -259,3 +259,31 @@
     [(empty? llist) 0]
     [else (+ (second (find-association "time" (first llist) 0))
              (total-time/list (rest llist)))]))
+
+; LAssoc -> List-of-Strings
+; creates a list of the keys where there are boolean attributes
+(check-expect (boolean-attributes
+               (list (list "a" #true)
+                     (list "b" 1)
+                     (list "c" #false)))
+              (list "a" "c"))
+(define (boolean-attributes la)
+  (cond
+    [(empty? la) '()]
+    [else (if (boolean? (second (first la)))
+              (cons (first (first la)) (boolean-attributes (rest la)))
+              (boolean-attributes (rest la)))]))
+
+; LAssoc -> Track
+; converts an LAssoc to a track, if possible
+(check-expect (lassoc->track atrack1) track1)
+(define (lassoc->track l)
+  (create-track
+   (second (first l))
+   (second (second l))
+   (second (third l))
+   (second (fourth l))
+   (second (fifth l))
+   (second (sixth l))
+   (second (seventh l))
+   (second (eighth l))))
