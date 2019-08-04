@@ -30,7 +30,7 @@
   (cond
     [(empty? low) '()]
     [else (cons (word->string (first low))
-           (rest low))]))
+           (words->strings (rest low)))]))
 
      
 ; Word -> List-of-words
