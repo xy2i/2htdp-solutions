@@ -36,12 +36,63 @@
 ; Snake-game -> Snake-game
 ; moves the snake, checks for eating food and creates new food if eaten
 (define (tock sg)
-  (if (eaten-food? sg)
-      (grow-snake-change-food sg)
-      (make-sgame
-       (move/snake (sgame-snake sg))
-       (sgame-food sg))))
+  (if (eaten-food? (move sg)) ; if we move the snake once, is it on a food?
+      (grow-snake-change-food sg) ; move, while growing the snake and changing the food's position
+      (move sg)))
 
+; Snake-game -> Snake-game
+; moves the snake
+(define (move sg)
+  (make-sgame
+   (move/snake (sgame-snake sg))
+   (sgame-food sg)))
+  
+; Snake-game -> Snake-game
+; grows the snake and places a new food
+(define (grow-snake-change-food sg)
+  (make-sgame
+   (grow-snake (sgame-snake sg) (sgame-food sg))
+   (food-create (sgame-food sg))))
+
+; Snake -> Snake
+; eats a food at the given posn and grows one segment
+(check-expect (grow-snake (list (make-seg (make-posn 0 0) "right")
+                                (make-seg (make-posn 1 0) "right"))
+                          (make-posn 2 0))
+              (list (make-seg (make-posn 0 0) "right")
+                    (make-seg (make-posn 1 0) "right")
+                    (make-seg (make-posn 2 0) "right")))
+
+(define (grow-snake snake food)
+  (cond
+    [(empty? (rest snake)) (cons (first snake) ; snake head
+                                 (cons (make-seg food
+                                                 ; creates a new segment (new snake head)...
+                                                 ; with the same direction as the old snake's head
+                                                 (seg-dir (first snake)))
+                                       '()))]
+    [else ; more than one segment
+     (cons (first snake)
+                (grow-snake (rest snake) food))])) ; recur until we get the head
+
+; Posn -> Posn 
+; generates a random food, if the food is not in the same place
+(check-satisfied (food-create (make-posn 1 1)) not=-1-1?)
+(define (food-create p)
+  (food-check-create
+     p (make-posn (random MAX) (random MAX))))
+ 
+; Posn Posn -> Posn 
+; generative recursion 
+; checks if the food is not in the same place, calls food-create again otherwise
+(define (food-check-create p candidate)
+  (if (equal? p candidate) (food-create p) candidate))
+ 
+; Posn -> Boolean
+; use for testing only 
+(define (not=-1-1? p)
+  (not (and (= (posn-x p) 1) (= (posn-y p) 1))))
+    
 ; Snake -> Snake
 ; moves an entire snake
 (check-expect (move/snake (list
@@ -59,8 +110,13 @@
     [(empty? (rest s)) ; only one segment?
      (cons (move/segment (first s) (seg-dir (first s))) ; move it in its direction
            '())]
-    [else
-     (cons (move/segment (first s) (seg-dir (second s))) ; at least two segments
+    [else ; at least two segments
+     (cons (move/segment (first s) (seg-dir (second s))) 
+           ; each direction change is propagated from the head (last s) to the tail (first s)
+           ; recursively, by taking the direction of the next segment each time
+           ; a snake that has "right" "right" "down"
+           ; will become      "right" "down"  "down"
+           ; then next tick   "down"  "down"  "down"
            (move/snake (rest s)))]))
     
 ; Segment -> Segment
@@ -90,35 +146,17 @@
 ; check if the food was eaten
 (check-expect (eaten-food?
                (make-sgame
-                (list (make-posn 0 0)
-                      (make-posn 0 1))
-                (make-posn 2 2)) #false))
+                (list (make-seg (make-posn 0 0) "right")
+                      (make-seg (make-posn 0 1) "down"))
+                (make-posn 2 2))) #false)
 (check-expect (eaten-food?
                (make-sgame
-                (list (make-posn 0 0)
-                      (make-posn 0 1))
-                (make-posn 0 1)) #false))
+                (list (make-seg (make-posn 0 0) "right")
+                      (make-seg (make-posn 0 1) "down"))
+                (make-posn 0 1))) #true)
 (define (eaten-food? sg)
   (member? (sgame-food sg) ; posn of food
-           (segs-posns (sgame-snake sg)))) ; list of posns for the snake
-
-; Posn -> Posn 
-; generates a random food, if the food is not in the same place
-(check-satisfied (food-create (make-posn 1 1)) not=-1-1?)
-(define (food-create p)
-  (food-check-create
-     p (make-posn (random MAX) (random MAX))))
- 
-; Posn Posn -> Posn 
-; generative recursion 
-; checks if the food is not in the same place, calls food-create again otherwise
-(define (food-check-create p candidate)
-  (if (equal? p candidate) (food-create p) candidate))
- 
-; Posn -> Boolean
-; use for testing only 
-(define (not=-1-1? p)
-  (not (and (= (posn-x p) 1) (= (posn-y p) 1))))
+           (segs-posn (sgame-snake sg)))) ; list of posns for the snake
 
 ; Snake-game -> Snake-game
 ; turns the snake in a snake-game
@@ -151,10 +189,10 @@
                     (make-seg (make-posn 0 1) "right")))
 (define (turn/snake s ke)
   (cond
-    [(empty? (rest s)) ; only turn the first segment
+    [(empty? (rest s)) ; only turn the head
      (cons
       (make-seg (seg-posn (first s))
-                (cond
+                (cond ; explicit key handler
                   [(string=? "left" ke) "left"]
                   [(string=? "right" ke) "right"]
                   [(string=? "up" ke) "up"]
@@ -259,21 +297,25 @@
               (self-eat? (rest s)))]))
 
 ; Snake -> List-of-posn
-; extracts a posn from each segment
+; extracts a posn from each segment of a list
 (define (segs-posn s)
   (cond
     [(empty? (rest s)) (cons (seg-posn (first s)) '())]
     [else
      (cons (seg-posn (first s)) (segs-posn (rest s)))]))
 
+; initial state
 (define is
   (make-sgame
    (list (make-seg (make-posn 0 0) "right")
                  (make-seg (make-posn 1 0) "right"))
    (make-posn 6 6)))
+
 (define (snake-main is)
   (big-bang is
-    [on-tick tock 0.5]
+    [on-tick tock 0.25]
     [on-key turn]
     [to-draw render]
     [stop-when out? render/out]))
+
+(snake-main is)
