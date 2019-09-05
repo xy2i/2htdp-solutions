@@ -42,12 +42,19 @@
 
 (define (inf-1 l)
   (compare < l))
-
 (define (sup-1 l)
   (compare > l))
+
+; reduces a list of number into one, while keeping the intermediate value
+(define (reduce-i F l)
+  (cond
+    [(empty? (rest l)) (first l)]
+    [else (F (first l)
+             (reduce-i F (rest l)))]))
+     
 (define (inf-2 l)
-  (compare min l))
+  (reduce-i min l))
 (define (sup-2 l)
-  (compare max l))
+  (reduce-i max l))
 
 ; Recurs
